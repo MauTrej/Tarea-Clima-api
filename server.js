@@ -1,16 +1,18 @@
-import "dotenv/config"; // Equivalente moderno a require('dotenv').config()
+import "dotenv/config"; 
 import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
 import { body, validationResult } from "express-validator";
+import tareasRouter from "./routes/tareas.js";
 
-const app = express(); // Cambiado a declaración limpia
+const app = express(); 
 
 app.use(helmet()); // cabeceras de seguridad HTTP
 app.use(express.json()); // parseo seguro de JSON
 app.use(morgan("dev")); // bitácora de peticiones
+app.use("/api/tareas", tareasRouter);
 
-// Ruta de prueba con validación de entrada
+/*/ Ruta de prueba con validación de entrada
 app.post(
   "/api/echo",
   body("mensaje").isString().trim().isLength({ min: 1, max: 200 }).escape(),
@@ -40,6 +42,5 @@ app.post(
     }
     res.json({nombre: req.body.nombre, correo: req.body.correo})
   },
-);
-
+);*/
 export default app;
