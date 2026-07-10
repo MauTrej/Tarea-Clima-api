@@ -24,4 +24,5 @@ export default {
     tareas.splice(indice, 1);
     return true;
   }
+
 };

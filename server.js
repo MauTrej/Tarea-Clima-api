@@ -4,13 +4,19 @@ import helmet from "helmet";
 import morgan from "morgan";
 import { body, validationResult } from "express-validator";
 import tareasRouter from "./routes/tareas.js";
+import climaRouter from "./routes/clima.js";
+import swaggerUi from "swagger-ui-express";
+import YAML from "yamljs";
 
 const app = express(); 
+const swaggerDocument = YAML.load("./swagger.yaml");
 
 app.use(helmet()); // cabeceras de seguridad HTTP
 app.use(express.json()); // parseo seguro de JSON
 app.use(morgan("dev")); // bitácora de peticiones
 app.use("/api/tareas", tareasRouter);
+app.use("/api/clima", climaRouter);
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 /*/ Ruta de prueba con validación de entrada
 app.post(

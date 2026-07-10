@@ -1,0 +1,273 @@
+openapi: 3.0.3
+info:
+  title: API de Tareas
+  version: 1.0.0
+  description: API REST de tareas con HTTPS, Helmet y validaciones.
+servers:
+  - url: https://localhost:3000
+tags:
+  - name: Tareas
+  - name: Clima
+paths:
+  /api/tareas:
+    get:
+      tags: [Tareas]
+      summary: Listar todas las tareas
+      responses:
+        '200':
+          description: Lista de tareas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tarea'
+    post:
+      tags: [Tareas]
+      summary: Crear una tarea
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CrearTarea'
+      responses:
+        '201':
+          description: Tarea creada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarea'
+        '400':
+          description: Datos invalidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidacion'
+
+  /api/tareas/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+    get:
+      tags: [Tareas]
+      summary: Obtener una tarea por id
+      responses:
+        '200':
+          description: Tarea encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarea'
+        '400':
+          description: Id invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidacion'
+        '404':
+          description: Tarea no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSimple'
+
+    put:
+      tags: [Tareas]
+      summary: Actualizar una tarea
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ActualizarTarea'
+      responses:
+        '200':
+          description: Tarea actualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarea'
+        '400':
+          description: Datos invalidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidacion'
+        '404':
+          description: Tarea no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSimple'
+
+    delete:
+      tags: [Tareas]
+      summary: Eliminar una tarea
+      responses:
+        '204':
+          description: Tarea eliminada
+        '400':
+          description: Id invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidacion'
+        '404':
+          description: Tarea no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSimple'
+
+  /api/tareas/{id}/clima:
+    get:
+      tags: [Tareas]
+      summary: Tarea con clima externo
+      description: Obtiene una tarea por id y agrega datos de clima de la ciudad indicada.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: ciudad
+          in: query
+          required: false
+          schema:
+            type: string
+            example: Toluca
+      responses:
+        '200':
+          description: Tarea y clima obtenidos correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TareaConClima'
+        '400':
+          description: Id invalido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidacion'
+        '404':
+          description: Tarea no encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSimple'
+        '502':
+          description: Error del servicio externo de clima
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSimple'
+
+  /api/clima/{ciudad}:
+    parameters:
+      - name: ciudad
+        in: path
+        required: true
+        schema:
+          type: string
+          example: Toluca
+    get:
+      tags: [Clima]
+      summary: Obtener clima de una ciudad
+      description: Obtiene datos de clima de la ciudad indicada en la URL.
+      responses:
+        '200':
+          description: Clima obtenido correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Clima'
+        '400':
+          description: Parámetro ciudad inválido
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidacion'
+        '502':
+          description: Error del servicio externo de clima
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSimple'
+
+components:
+  schemas:
+    Tarea:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        titulo:
+          type: string
+          example: Aprender Postman
+        completada:
+          type: boolean
+          example: false
+
+    CrearTarea:
+      type: object
+      required: [titulo]
+      properties:
+        titulo:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: Aprender Swagger
+
+    ActualizarTarea:
+      type: object
+      properties:
+        titulo:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: Aprender Swagger UI
+        completada:
+          type: boolean
+          example: true
+
+    Clima:
+      type: object
+      properties:
+        ciudad:
+          type: string
+          example: Toluca
+        temperatura:
+          type: number
+          format: float
+          example: 22.5
+        descripcion:
+          type: string
+          example: cielo despejado
+
+    TareaConClima:
+      type: object
+      properties:
+        tarea:
+          $ref: '#/components/schemas/Tarea'
+        clima:
+          $ref: '#/components/schemas/Clima'
+
+    ErrorSimple:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Tarea no encontrada
+
+    ErrorValidacion:
+      type: object
+      properties:
+        errores:
+          type: array
+          items:
+            type: object
