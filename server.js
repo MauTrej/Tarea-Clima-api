@@ -7,6 +7,8 @@ import tareasRouter from "./routes/tareas.js";
 import climaRouter from "./routes/clima.js";
 import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
+import authRouter from "./routes/auth.js";
+import verificarToken from "./middleware/auth.js";
 
 const app = express(); 
 const swaggerDocument = YAML.load("./swagger.yaml");
@@ -14,8 +16,9 @@ const swaggerDocument = YAML.load("./swagger.yaml");
 app.use(helmet()); // cabeceras de seguridad HTTP
 app.use(express.json()); // parseo seguro de JSON
 app.use(morgan("dev")); // bitácora de peticiones
-app.use("/api/tareas", tareasRouter);
-app.use("/api/clima", climaRouter);
+app.use('/api/auth', authRouter);           // pública: registro y login
+app.use('/api/tareas', verificarToken, tareasRouter);  // protegida
+app.use('/api/clima', verificarToken, climaRouter);    // protegida
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 /*/ Ruta de prueba con validación de entrada

@@ -8,11 +8,74 @@ servers:
 tags:
   - name: Tareas
   - name: Clima
+  - name: Auth
 paths:
+  /api/auth/registro:
+    post:
+      tags: [Auth]
+      summary: Registrar un usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistroRequest'
+      responses:
+        '201':
+          description: Usuario registrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+        '400':
+          description: Datos invalidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidacion'
+        '409':
+          description: El correo ya esta registrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSimple'
+
+  /api/auth/login:
+    post:
+      tags: [Auth]
+      summary: Iniciar sesion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Token JWT generado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Datos invalidos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorValidacion'
+        '401':
+          description: Credenciales invalidas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorSimple'
+
   /api/tareas:
     get:
       tags: [Tareas]
       summary: Listar todas las tareas
+      security:
+        - BearerAuth: []
       responses:
         '200':
           description: Lista de tareas
@@ -25,6 +88,8 @@ paths:
     post:
       tags: [Tareas]
       summary: Crear una tarea
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -55,6 +120,8 @@ paths:
     get:
       tags: [Tareas]
       summary: Obtener una tarea por id
+      security:
+        - BearerAuth: []
       responses:
         '200':
           description: Tarea encontrada
@@ -78,6 +145,8 @@ paths:
     put:
       tags: [Tareas]
       summary: Actualizar una tarea
+      security:
+        - BearerAuth: []
       requestBody:
         required: true
         content:
@@ -107,6 +176,8 @@ paths:
     delete:
       tags: [Tareas]
       summary: Eliminar una tarea
+      security:
+        - BearerAuth: []
       responses:
         '204':
           description: Tarea eliminada
@@ -128,6 +199,8 @@ paths:
       tags: [Tareas]
       summary: Tarea con clima externo
       description: Obtiene una tarea por id y agrega datos de clima de la ciudad indicada.
+      security:
+        - BearerAuth: []
       parameters:
         - name: id
           in: path
@@ -178,6 +251,8 @@ paths:
       tags: [Clima]
       summary: Obtener clima de una ciudad
       description: Obtiene datos de clima de la ciudad indicada en la URL.
+      security:
+        - BearerAuth: []
       responses:
         '200':
           description: Clima obtenido correctamente
@@ -199,7 +274,56 @@ paths:
                 $ref: '#/components/schemas/ErrorSimple'
 
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
+    Usuario:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        correo:
+          type: string
+          format: email
+          example: usuario@correo.com
+
+    RegistroRequest:
+      type: object
+      required: [correo, password]
+      properties:
+        correo:
+          type: string
+          format: email
+          example: usuario@correo.com
+        password:
+          type: string
+          minLength: 6
+          example: miPassword123
+
+    LoginRequest:
+      type: object
+      required: [correo, password]
+      properties:
+        correo:
+          type: string
+          format: email
+          example: usuario@correo.com
+        password:
+          type: string
+          example: miPassword123
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
     Tarea:
       type: object
       properties:
